@@ -1,0 +1,85 @@
+type Calendar{
+  mykey:ID!
+  timezone: String @cypher(statement:"match (this)-[:BELONGS_TO]-(tz:TZ) return tz.mykey limit 1")
+  Events: [BELONGS_TO]
+  InvitedEvents : [INVITED] 
+  AcceptedEvents : [ACCEPTED]
+  DeclinedEvents : [DECLINED]
+  CreatedEvents : [BELONGS_TO]
+}
+type Event{
+  mykey:ID!
+  Calendar:BELONGS_TO
+  title:String
+  body:String
+  AcceptedCalendar : [ACCEPTED]
+  DeclinedCalendar : [DECLINED]
+}
+
+type BELONGS_TO @relation(name: "BELONGS_TO"){
+  from: Event
+  to: Calendar
+  created_at: DateTime
+}
+
+type ACCEPTED @relation(name:"ACCEPTED"){
+  from: Calendar
+  to: Event
+  created_at: DateTime
+}
+type DECLINED @relation(name:"DECLINED"){
+  from: Calendar
+  to: Event
+  created_at: DateTime
+}
+type CREATED @relation(name:"CREATED"){
+  from: Event
+  to: Calendar
+  created_at: DateTime
+}
+type INVITED @relation(name:"INVITED"){
+  from: Event
+  to: Calendar
+  created_at: DateTime
+}
+
+type TimeSlot{
+  from: DateTime
+  to: DateTime
+}
+
+type Day{
+  mykey: String
+}
+
+type Query{
+  Calendar:[Calendar]@cypher(statement:"MATCH (c:Calendar)-[OWNED]-(:Owner{mykey:$cypherParams.ownerId}) return distinct c")
+  Event:[Event]@cypher(statement:"MATCH (e:Event)-[]-(:Calendar)-[OWNED]-(:Owner{mykey:$cypherParams.ownerId}) return distinct e")
+}
+type Mutation {
+
+  
+  createOrUpdateCalendar(calendarId:String="", timeZoneOffset:String="Z"): Calendar
+  @cypher(statement:"call com.vizipi.Procs.createOrUpdateCalendar($cypherParams.ownerId, $calendarId, $timeZoneOffset) yield node return node")        
+
+  createOrUpdateEvent(eventId:String="", calendarId:String!, startDate:DateTime, endDate:DateTime,title:String="",body:String=""): Event
+  @cypher(statement:"call com.vizipi.Procs.createOrUpdateEvent($cypherParams.ownerId, $calendarId, DateTime($startDate), DateTime($endDate), $title,$body,$eventId) yield node return node")
+
+
+  checkAvailability(calendarIds:[String], fromDate:DateTime!,toDate:DateTime!  ): [TimeSlot]
+  @cypher(statement:"call com.vizipi.Procs.checkAvailability($cypherParams.ownerId, $calendarIds, DateTime($fromDate), DateTime($toDate)) yield node return node")        
+
+
+  inviteToEvent(eventID:String!, calendarIds:[String]): Event
+  @cypher(statement:"call com.vizipi.Procs.EventInvite($eventID, $calendarIds) yield node return node")
+
+  acceptInvite(eventID:String!, calendarId:String!): Event
+  @cypher(statement:"call com.vizipi.Procs.AcceptInvite($eventID, $calendarId) yield node return node")  
+
+  dceclineInvite(eventID:String!, calendarId:String!): Event
+  @cypher(statement:"call com.vizipi.Procs.DeclineInvite($eventID, $calendarId) yield node return node")    
+
+  unInvite(eventID:String!,  calendarIds:[String]): Event
+  @cypher(statement:"call com.vizipi.Procs.EventUnInvite($eventID, $calendarIds) yield node return node")      
+
+}
