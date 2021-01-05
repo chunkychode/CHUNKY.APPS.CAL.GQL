@@ -5,7 +5,9 @@ const neo4j = require('neo4j-driver')
 const typeDefs = require("./graphql-schema");
 const { Kind } = require('graphql');
 const verifyToken = require('./verifyToken');
+const dotenv = require('dotenv');
 
+dotenv.config();
 
 const driver = neo4j.driver(
   process.env.NEO_BOLT,

@@ -67,7 +67,7 @@ type Mutation {
 
 
   checkAvailability(calendarIds:[String], fromDate:DateTime!,toDate:DateTime!  ): [TimeSlot]
-  @cypher(statement:"call com.vizipi.Procs.checkAvailability($cypherParams.ownerId, $calendarIds, DateTime($fromDate), DateTime($toDate)) yield node return node")        
+  @cypher(statement:"call com.vizipi.Procs.checkAvailability($cypherParams.ownerId, $calendarIds, DateTime($fromDate), DateTime($toDate)) yield from, to return {from:from,to:to} as node")        
 
 
   inviteToEvent(eventID:String!, calendarIds:[String]): Event
