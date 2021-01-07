@@ -1,4 +1,13 @@
-type Calendar{
+  directive @deepAuth(
+    path: String
+    variables: [String]
+  ) on OBJECT
+  
+  type Owner @deepAuth(path:"""{ mykey:"$ownerId" }""", variables: ["$ownerId"]) {
+    mykey:ID!
+  }
+
+  type Calendar @deepAuth(path:"""{ Owner:{Owner:{mykey:"$ownerId"}} }""", variables: ["$ownerId"]) {
   mykey:ID!
   timezone: String @cypher(statement:"match (this)-[:BELONGS_TO]-(tz:TZ) return tz.mykey limit 1")
   Events: [BELONGS_TO]
@@ -6,8 +15,9 @@ type Calendar{
   AcceptedEvents : [ACCEPTED]
   DeclinedEvents : [DECLINED]
   CreatedEvents : [BELONGS_TO]
+  Owner : OWNED
 }
-type Event{
+type Event @deepAuth(path:"""{Calendar:{Calendar:{Owner:{Owner:{mykey:"$ownerId"}} }}}  """, variables: ["$ownerId"]) {
   mykey:ID!
   Calendar:BELONGS_TO
   title:String
@@ -42,6 +52,10 @@ type INVITED @relation(name:"INVITED"){
   to: Calendar
   created_at: DateTime
 }
+type OWNED @relation(name:"OWNED"){
+  from: Calendar
+  to: Owner
+}
 
 type TimeSlot{
   from: DateTime
@@ -52,13 +66,8 @@ type Day{
   mykey: String
 }
 
-type Query{
-  Calendar:[Calendar]@cypher(statement:"MATCH (c:Calendar)-[OWNED]-(:Owner{mykey:$cypherParams.ownerId}) return distinct c")
-  Event:[Event]@cypher(statement:"MATCH (e:Event)-[]-(:Calendar)-[OWNED]-(:Owner{mykey:$cypherParams.ownerId}) return distinct e")
-}
 type Mutation {
 
-  
   createOrUpdateCalendar(calendarId:String="", timeZoneOffset:String="Z"): Calendar
   @cypher(statement:"call com.vizipi.Procs.createOrUpdateCalendar($cypherParams.ownerId, $calendarId, $timeZoneOffset) yield node return node")        
 
