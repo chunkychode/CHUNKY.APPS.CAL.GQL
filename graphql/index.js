@@ -6,6 +6,7 @@ const typeDefs = require("./graphql-schema");
 const { Kind } = require('graphql');
 const verifyToken = require('./verifyToken');
 const dotenv = require('dotenv');
+const { applyDeepAuth, applyDeepAuthToParams } = require('neo4j-deepauth');
 
 dotenv.config();
 
@@ -14,14 +15,6 @@ const driver = neo4j.driver(
   neo4j.auth.basic(process.env.NEO_UID, process.env.NEO_PWD)
 );
 
-const schema = makeAugmentedSchema({ 
-  typeDefs,
-  config:{
-    debug: true,
-    experimental: true,
-    mutation:false
-  } 
-});
 
 
 const isBodySchemaRequest = function (body) {
@@ -30,9 +23,32 @@ const isBodySchemaRequest = function (body) {
 
 const resolvers = {
   Query: {
-    hello: () => 'Hello world!',
+    Owner(object, params, ctx, resolveInfo) {
+      const { authParams, authResolveInfo } = applyDeepAuth(params, ctx, resolveInfo);
+      return neo4jgraphql(object, authParams, ctx, resolveInfo);
+    },
+    Calendar(object, params, ctx, resolveInfo) {
+      const { authParams, authResolveInfo } = applyDeepAuth(params, ctx, resolveInfo);
+      return neo4jgraphql(object, authParams, ctx, resolveInfo);
+    },
+    Event(object, params, ctx, resolveInfo) {
+      const { authParams, authResolveInfo } = applyDeepAuth(params, ctx, resolveInfo);
+      return neo4jgraphql(object, authParams, ctx, resolveInfo);
+    }
   },
 };
+
+const schema = makeAugmentedSchema({ 
+  typeDefs,
+  resolvers,
+  config:{
+    debug: true,
+    experimental: true,
+    mutation:false
+  } 
+});
+
+
 const server = new ApolloServer(
   { 
     schema, 
@@ -47,7 +63,7 @@ const server = new ApolloServer(
         if(!isBodySchemaRequest(req.context.req.body)){
           verifyToken(req.request.headers.authorization || "", req);
           if(!req.user){
-            throw new AuthenticationError("Invalid credentials s");
+            throw new AuthenticationError("Invalid credentials");
           }else{
             const idx = req.user.claims.findIndex(o => o.name == "chunky.app.calql:ownerid")
             if(idx<0){
@@ -58,7 +74,7 @@ const server = new ApolloServer(
           }
         }
       
-      return {driver,neo4jDatabase:"cal", cypherParams:{ownerId:cparams.ownerId}};
+      return {driver,neo4jDatabase:"cal", deepAuthParams:{$ownerId:cparams.ownerId}, cypherParams:{ownerId:cparams.ownerId}};
     }
     
   });
