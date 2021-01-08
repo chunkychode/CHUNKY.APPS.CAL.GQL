@@ -80,15 +80,15 @@ type Mutation {
 
 
   inviteToEvent(eventID:String!, calendarIds:[String]): Event
-  @cypher(statement:"call com.vizipi.Procs.EventInvite($eventID, $calendarIds) yield node return node")
+  @cypher(statement:"call com.vizipi.Procs.EventInvite($cypherParams.ownerId, $eventID, $calendarIds) yield node return node")
 
   acceptInvite(eventID:String!, calendarId:String!): Event
-  @cypher(statement:"call com.vizipi.Procs.AcceptInvite($eventID, $calendarId) yield node return node")  
+  @cypher(statement:"call com.vizipi.Procs.AcceptInvite($cypherParams.ownerId, $eventID, $calendarId) yield node return node")  
 
   dceclineInvite(eventID:String!, calendarId:String!): Event
-  @cypher(statement:"call com.vizipi.Procs.DeclineInvite($eventID, $calendarId) yield node return node")    
+  @cypher(statement:"call com.vizipi.Procs.DeclineInvite($cypherParams.ownerId, $eventID, $calendarId) yield node return node")    
 
   unInvite(eventID:String!,  calendarIds:[String]): Event
-  @cypher(statement:"call com.vizipi.Procs.EventUnInvite($eventID, $calendarIds) yield node return node")      
+  @cypher(statement:"call com.vizipi.Procs.EventUnInvite($cypherParams.ownerId, $eventID, $calendarIds) yield node return node")      
 
 }
