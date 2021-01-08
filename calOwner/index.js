@@ -36,7 +36,7 @@ module.exports = async function (context, req) {
 
     try {
         const result = await session.run(
-          'merge (o:Owner{mykey:apoc.create.uuid()}) return o'
+          'merge (o:Owner{itemID:apoc.create.uuid()}) return o'
         )
         
         const singleRecord = result.records[0]

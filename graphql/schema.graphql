@@ -3,13 +3,13 @@
     variables: [String]
   ) on OBJECT
   
-  type Owner @deepAuth(path:"""{ mykey:"$ownerId" }""", variables: ["$ownerId"]) {
-    mykey:ID!
+  type Owner @deepAuth(path:"""{ itemID:"$ownerId" }""", variables: ["$ownerId"]) {
+    itemID:ID!
   }
 
-  type Calendar @deepAuth(path:"""{ Owner:{Owner:{mykey:"$ownerId"}} }""", variables: ["$ownerId"]) {
-  mykey:ID!
-  timezone: String @cypher(statement:"match (this)-[:BELONGS_TO]-(tz:TZ) return tz.mykey limit 1")
+  type Calendar @deepAuth(path:"""{ Owner:{Owner:{itemID:"$ownerId"}} }""", variables: ["$ownerId"]) {
+  itemID:ID!
+  timezone: String @cypher(statement:"match (this)-[:BELONGS_TO]-(tz:TZ) return tz.itemID limit 1")
   Events: [BELONGS_TO]
   InvitedEvents : [INVITED] 
   AcceptedEvents : [ACCEPTED]
@@ -17,8 +17,8 @@
   CreatedEvents : [BELONGS_TO]
   Owner : OWNED
 }
-type Event @deepAuth(path:"""{Calendar:{Calendar:{Owner:{Owner:{mykey:"$ownerId"}} }}}  """, variables: ["$ownerId"]) {
-  mykey:ID!
+type Event @deepAuth(path:"""{Calendar:{Calendar:{Owner:{Owner:{itemID:"$ownerId"}} }}}  """, variables: ["$ownerId"]) {
+  itemID:ID!
   Calendar:BELONGS_TO
   title:String
   body:String
@@ -63,7 +63,7 @@ type TimeSlot{
 }
 
 type Day{
-  mykey: String
+  itemID: String
 }
 
 type Mutation {
