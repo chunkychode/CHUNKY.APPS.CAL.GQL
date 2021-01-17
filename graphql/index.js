@@ -57,6 +57,11 @@ const server = new ApolloServer(
       err.message = err.message.replace("Context creation failed: ","");
       return new ApolloError(err.message, err.extensions.code);
     },
+    playground:{
+      settings:{
+        'schema.polling.interval': 90000,
+      },
+    },
     context: async (req)  => {
       
       const cparams = {ownerId:""};
