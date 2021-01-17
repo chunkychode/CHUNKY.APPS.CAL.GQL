@@ -3,27 +3,32 @@
     variables: [String]
   ) on OBJECT
   
+  "You are the owner or all calendars"
   type Owner @deepAuth(path:"""{ itemID:"$ownerId" }""", variables: ["$ownerId"]) {
     itemID:ID!
   }
 
+  "Your calendars"
   type Calendar @deepAuth(path:"""{ Owner:{Owner:{itemID:"$ownerId"}} }""", variables: ["$ownerId"]) {
-  itemID:ID!
-  timezone: String @cypher(statement:"match (this)-[:BELONGS_TO]-(tz:TZ) return tz.itemID limit 1")
-  Events: [BELONGS_TO]
-  InvitedEvents : [INVITED] 
-  AcceptedEvents : [ACCEPTED]
-  DeclinedEvents : [DECLINED]
-  CreatedEvents : [BELONGS_TO]
-  Owner : OWNED
-}
+    itemID:ID!
+    timezone: String @cypher(statement:"match (this)-[:BELONGS_TO]-(tz:TZ) return tz.itemID limit 1")
+    Owner : OWNED
+    Events: [BELONGS_TO]
+    InvitedEvents : [INVITED] 
+    AcceptedEvents : [ACCEPTED]
+    DeclinedEvents : [DECLINED]
+    CreatedEvents : [BELONGS_TO]
+  }
+
+"Events in all calendars "
 type Event @deepAuth(path:"""{Calendar:{Calendar:{Owner:{Owner:{itemID:"$ownerId"}} }}}  """, variables: ["$ownerId"]) {
   itemID:ID!
   Calendar:BELONGS_TO
   title:String
   body:String
-  AcceptedCalendar : [ACCEPTED]
-  DeclinedCalendar : [DECLINED]
+  InvitedCalendars :  [INVITED]
+  AcceptedCalendars : [ACCEPTED]
+  DeclinedCalendars : [DECLINED]
 }
 
 type BELONGS_TO @relation(name: "BELONGS_TO"){
@@ -68,17 +73,61 @@ type Day{
 
 type Mutation {
 
+  """
+  Creates OR updates an existing calander.
+  **calendarId**
+  If you pass a value you will either create a new calendar with that ID or update an existing one to the specified timezone.
+  If you omit the calendarId you will get a new calendar with a randon id
+  """
   createOrUpdateCalendar(calendarId:String="", timeZoneOffset:String="Z"): Calendar
   @cypher(statement:"call com.vizipi.Procs.createOrUpdateCalendar($cypherParams.ownerId, $calendarId, $timeZoneOffset) yield node return node")        
 
+
+  """
+  Creates OR updates an existing Event.
+  **eventId**
+  If you pass a value you will either create a new Event with that ID or update an existing one.
+  If you omit the eventId you will get a new Event with a randon id
+
+  **calendarId**
+  The calendar this event belongs to.  if the calendar does not exist it will be created ( default timezone )
+  """
   createOrUpdateEvent(eventId:String="", calendarId:String!, startDate:DateTime, endDate:DateTime,title:String="",body:String=""): Event
   @cypher(statement:"call com.vizipi.Procs.createOrUpdateEvent($cypherParams.ownerId, $calendarId, DateTime($startDate), DateTime($endDate), $title,$body,$eventId) yield node return node")
 
 
+  """
+  This will return the first 5 time slots where all the calendarIds supplied are available.
+  for example assuming event lengths are 30 minutes and these are some events per calendar
+  
+
+| Calendar 1       | Calendar 2     | Calendar 3     |
+| :------------- | :----------: | -----------: |
+| 2020-01-01 08:00 | 2020-01-01 08:00   | 2020-01-01 07:00    |
+| 2020-01-01 10:45 | 2020-01-01 08:45   | 2020-01-01 09:25    | |
+
+should return 
+from 2020-01-01 07:30
+to   2020-01-01 08:00
+
+from 2020-01-01 09:30
+to   2020-01-01 10:00
+
+from 2020-01-01 10:00
+to   2020-01-01 10:30
+
+from 2020-01-01 11:15
+to   2020-01-01 11:45
+
+  *Note* the time zone is not yes translated :/ and need to add how large of a window is needed
+  """
   checkAvailability(calendarIds:[String], fromDate:DateTime!,toDate:DateTime!  ): [TimeSlot]
   @cypher(statement:"call com.vizipi.Procs.checkAvailability($cypherParams.ownerId, $calendarIds, DateTime($fromDate), DateTime($toDate)) yield from, to return {from:from,to:to} as node")        
 
 
+  """
+  invite one or more calendars to this event  ( any non existant calendar will be created and invited )
+  """
   inviteToEvent(eventID:String!, calendarIds:[String]): Event
   @cypher(statement:"call com.vizipi.Procs.EventInvite($cypherParams.ownerId, $eventID, $calendarIds) yield node return node")
 

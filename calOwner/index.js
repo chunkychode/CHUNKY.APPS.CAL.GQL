@@ -36,14 +36,14 @@ module.exports = async function (context, req) {
 
     try {
         const result = await session.run(
-          'merge (o:Owner{itemID:apoc.create.uuid()}) return o'
+          'call com.vizipi.Procs.createOrUpdateOwner(null) yield node return node'
         )
         
         const singleRecord = result.records[0]
         
         const node = singleRecord.get(0)
         
-        context.res = { status:201, body: {"message":"", "ownerId":node.properties.mykey} };
+        context.res = { status:201, body: {"message":"", "ownerId":node.properties.itemID} };
         }catch(err){
           context.log(err);
           context.res = { status:500, body: {"message":""} };
