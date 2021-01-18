@@ -20,7 +20,7 @@
     CreatedEvents : [BELONGS_TO]
   }
 
-"Events in all calendars "
+"Events in all calendars XX"
 type Event @deepAuth(path:"""{Calendar:{Calendar:{Owner:{Owner:{itemID:"$ownerId"}} }}}  """, variables: ["$ownerId"]) {
   itemID:ID!
   Calendar:BELONGS_TO
