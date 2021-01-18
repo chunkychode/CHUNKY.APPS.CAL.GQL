@@ -134,7 +134,7 @@ to   2020-01-01 11:45
   acceptInvite(eventID:String!, calendarId:String!): Event
   @cypher(statement:"call com.vizipi.Procs.AcceptInvite($cypherParams.ownerId, $eventID, $calendarId) yield node return node")  
 
-  dceclineInvite(eventID:String!, calendarId:String!): Event
+  declineInvite(eventID:String!, calendarId:String!): Event
   @cypher(statement:"call com.vizipi.Procs.DeclineInvite($cypherParams.ownerId, $eventID, $calendarId) yield node return node")    
 
   unInvite(eventID:String!,  calendarIds:[String]): Event
