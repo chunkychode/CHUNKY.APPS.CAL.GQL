@@ -26,6 +26,8 @@ type Event @deepAuth(path:"""{Calendar:{Calendar:{Owner:{Owner:{itemID:"$ownerId
   Calendar:BELONGS_TO
   title:String
   body:String
+  starts : String @cypher(statement:"MATCH (this)-[s:STARTS]-(d:Day) RETURN  toString(datetime(  datetime( toString(d.y)) + duration({days:d.d}) + duration({minutes:s.timestamp}))) as starts")
+  ends :   String @cypher(statement:"MATCH (this)-[s:ENDS]-(d:Day) RETURN  toString(datetime(  datetime( toString(d.y)) + duration({days:d.d}) + duration({minutes:s.timestamp}))) as ends")
   InvitedCalendars :  [INVITED]
   AcceptedCalendars : [ACCEPTED]
   DeclinedCalendars : [DECLINED]
