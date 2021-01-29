@@ -43,7 +43,7 @@ module.exports = async function (context, req) {
         
         const node = singleRecord.get(0)
         
-        context.res = { status:201, body: {"message":"", "ownerId":node.properties.itemID} };
+        context.res = { status:201, body: {"message":"", "ownerId":node.properties.id} };
         }catch(err){
           context.log(err);
           context.res = { status:500, body: {"message":""} };

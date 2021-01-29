@@ -4,14 +4,14 @@
   ) on OBJECT
   
   "You are the owner or all calendars"
-  type Owner @deepAuth(path:"""{ itemID:"$ownerId" }""", variables: ["$ownerId"]) {
-    itemID:ID!
+  type Owner @deepAuth(path:"""{ id:"$ownerId" }""", variables: ["$ownerId"]) {
+    id:ID!
   }
 
   "Your calendars"
-  type Calendar @deepAuth(path:"""{ Owner:{Owner:{itemID:"$ownerId"}} }""", variables: ["$ownerId"]) {
-    itemID:ID!
-    timezone: String @cypher(statement:"match (this)-[:BELONGS_TO]-(tz:TZ) return tz.itemID limit 1")
+  type Calendar @deepAuth(path:"""{ Owner:{Owner:{id:"$ownerId"}} }""", variables: ["$ownerId"]) {
+    id:ID!
+    timezone: String @cypher(statement:"match (this)-[:BELONGS_TO]-(tz:TZ) return tz.id limit 1")
     Owner : OWNED
     Events: [BELONGS_TO]
     InvitedEvents : [INVITED] 
@@ -21,13 +21,14 @@
   }
 
 "Events in all calendars XX"
-type Event @deepAuth(path:"""{Calendar:{Calendar:{Owner:{Owner:{itemID:"$ownerId"}} }}}  """, variables: ["$ownerId"]) {
-  itemID:ID!
+type Event @deepAuth(path:"""{Calendar:{Calendar:{Owner:{Owner:{id:"$ownerId"}} }}}  """, variables: ["$ownerId"]) {
+  id:ID!
   Calendar:BELONGS_TO
   title:String
   body:String
-  starts : String @cypher(statement:"MATCH (this)-[s:STARTS]-(d:Day) RETURN  toString(datetime(  datetime( toString(d.y)) + duration({days:d.d}) + duration({minutes:s.timestamp}))) as starts")
-  ends :   String @cypher(statement:"MATCH (this)-[s:ENDS]-(d:Day) RETURN  toString(datetime(  datetime( toString(d.y)) + duration({days:d.d}) + duration({minutes:s.timestamp}))) as ends")
+  boo : DateTime @cypher(statement:"WITH datetime('2019-06-01T18:40:32.142+0100') as D return {year:D.year, month:D.month,day:D.day,hour:D.hour,minute:D.minute,second:D.second,millisecond:D.millisecond,microsecond:0, nanosecond:0,timezone:D.timezone,formatted:toString(D)} as boo")
+  starts : [Date] @cypher(statement:"MATCH (this) WITH com.vizipi.Procs.toDT(this, true) as starts RETURN starts")
+  ends :   String @cypher(statement:"MATCH (this)-[s:ENDS]-(d:Day) RETURN  toString(datetime(  datetime( toString(d.y)) + duration({days:d.d -1 }) + duration({minutes:s.timestamp}))) as ends")
   InvitedCalendars :  [INVITED]
   AcceptedCalendars : [ACCEPTED]
   DeclinedCalendars : [DECLINED]
@@ -70,7 +71,7 @@ type TimeSlot{
 }
 
 type Day{
-  itemID: String
+  id: String
 }
 
 type Mutation {
