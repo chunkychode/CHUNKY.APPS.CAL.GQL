@@ -143,4 +143,12 @@ to   2020-01-01 11:45
   unInvite(eventID:String!,  calendarIds:[String]): Event
   @cypher(statement:"call com.vizipi.Procs.EventUnInvite($cypherParams.ownerId, $eventID, $calendarIds) yield node return node")      
 
+
+  deleteEvent(eventID:String!): Event
+  @cypher(statement:"call com.vizipi.Procs.DeleteEvent($cypherParams.ownerId, $eventID) yield node return node")      
+
+
+  deleteCalendar(calendarId:String!): Event
+  @cypher(statement:"call com.vizipi.Procs.DeleteCalendar($cypherParams.ownerId, $calendarId) yield node return node")      
+  
 }
