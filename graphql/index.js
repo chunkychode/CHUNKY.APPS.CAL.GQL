@@ -54,6 +54,7 @@ const server = new ApolloServer(
     schema, 
     formatError: (err) => {
       err.message = err.message.replace("Failed to invoke procedure `apoc.cypher.doIt`: Caused by: java.lang.","");
+      err.message = err.message.replace("Failed to invoke procedure `apoc.cypher.doIt`: Caused by: org.neo4j.exceptions.TemporalParseException: ","");
       err.message = err.message.replace("Context creation failed: ","");
       return new ApolloError(err.message, err.extensions.code);
     },

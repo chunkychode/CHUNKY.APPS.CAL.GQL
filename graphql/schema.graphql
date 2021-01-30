@@ -26,9 +26,8 @@ type Event @deepAuth(path:"""{Calendar:{Calendar:{Owner:{Owner:{id:"$ownerId"}} 
   Calendar:BELONGS_TO
   title:String
   body:String
-  boo : DateTime @cypher(statement:"WITH datetime('2019-06-01T18:40:32.142+0100') as D return {year:D.year, month:D.month,day:D.day,hour:D.hour,minute:D.minute,second:D.second,millisecond:D.millisecond,microsecond:0, nanosecond:0,timezone:D.timezone,formatted:toString(D)} as boo")
-  starts : [Date] @cypher(statement:"MATCH (this) WITH com.vizipi.Procs.toDT(this, true) as starts RETURN starts")
-  ends :   String @cypher(statement:"MATCH (this)-[s:ENDS]-(d:Day) RETURN  toString(datetime(  datetime( toString(d.y)) + duration({days:d.d -1 }) + duration({minutes:s.timestamp}))) as ends")
+  starts : String @cypher(statement:"MATCH (this) WITH com.vizipi.Procs.toDT(this, true) as starts RETURN toString(starts)")
+  ends :   String @cypher(statement:"MATCH (this) WITH com.vizipi.Procs.toDT(this, false) as starts RETURN toString(starts)")
   InvitedCalendars :  [INVITED]
   AcceptedCalendars : [ACCEPTED]
   DeclinedCalendars : [DECLINED]
@@ -95,7 +94,7 @@ type Mutation {
   **calendarId**
   The calendar this event belongs to.  if the calendar does not exist it will be created ( default timezone )
   """
-  createOrUpdateEvent(eventId:String="", calendarId:String!, startDate:DateTime, endDate:DateTime,title:String="",body:String=""): Event
+  createOrUpdateEvent(eventId:String="", calendarId:String!, startDate:String, endDate:String,title:String="",body:String=""): Event
   @cypher(statement:"call com.vizipi.Procs.createOrUpdateEvent($cypherParams.ownerId, $calendarId, DateTime($startDate), DateTime($endDate), $title,$body,$eventId) yield node return node")
 
 
@@ -124,7 +123,7 @@ to   2020-01-01 11:45
 
   *Note* the time zone is not yes translated :/ and need to add how large of a window is needed
   """
-  checkAvailability(calendarIds:[String], fromDate:DateTime!,toDate:DateTime!  ): [TimeSlot]
+  checkAvailability(calendarIds:[String], fromDate:String!,toDate:String!  ): [TimeSlot]
   @cypher(statement:"call com.vizipi.Procs.checkAvailability($cypherParams.ownerId, $calendarIds, DateTime($fromDate), DateTime($toDate)) yield from, to return {from:from,to:to} as node")        
 
 
@@ -144,11 +143,16 @@ to   2020-01-01 11:45
   @cypher(statement:"call com.vizipi.Procs.EventUnInvite($cypherParams.ownerId, $eventID, $calendarIds) yield node return node")      
 
 
+"""
+Deletes the provided event  will return empty event or an error if you provided the wrong eventid
+"""
   deleteEvent(eventID:String!): Event
   @cypher(statement:"call com.vizipi.Procs.DeleteEvent($cypherParams.ownerId, $eventID) yield node return node")      
 
-
-  deleteCalendar(calendarId:String!): Event
+"""
+Deletes the provided calendar and all the events associated with it.  Will return empty calendar or an error if you provided the wrong calendarId
+"""
+  deleteCalendar(calendarId:String!): Calendar
   @cypher(statement:"call com.vizipi.Procs.DeleteCalendar($cypherParams.ownerId, $calendarId) yield node return node")      
   
 }
