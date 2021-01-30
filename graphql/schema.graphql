@@ -12,25 +12,25 @@
   type Calendar @deepAuth(path:"""{ Owner:{Owner:{id:"$ownerId"}} }""", variables: ["$ownerId"]) {
     id:ID!
     timezone: String @cypher(statement:"match (this)-[:BELONGS_TO]-(tz:TZ) return tz.id limit 1")
-    Owner : OWNED
-    Events: [BELONGS_TO]
-    InvitedEvents : [INVITED] 
-    AcceptedEvents : [ACCEPTED]
-    DeclinedEvents : [DECLINED]
-    CreatedEvents : [BELONGS_TO]
+    owner : OWNED
+    events: [BELONGS_TO]
+    invitedEvents : [INVITED] 
+    acceptedEvents : [ACCEPTED]
+    declinedEvents : [DECLINED]
+    createdEvents : [BELONGS_TO]
   }
 
 "Events in all calendars XX"
 type Event @deepAuth(path:"""{Calendar:{Calendar:{Owner:{Owner:{id:"$ownerId"}} }}}  """, variables: ["$ownerId"]) {
   id:ID!
-  Calendar:BELONGS_TO
+  calendar:BELONGS_TO
   title:String
   body:String
-  starts : String @cypher(statement:"MATCH (this) WITH com.vizipi.Procs.toDT(this, true) as starts RETURN toString(starts)")
-  ends :   String @cypher(statement:"MATCH (this) WITH com.vizipi.Procs.toDT(this, false) as starts RETURN toString(starts)")
-  InvitedCalendars :  [INVITED]
-  AcceptedCalendars : [ACCEPTED]
-  DeclinedCalendars : [DECLINED]
+  startAt : String @cypher(statement:"MATCH (this) WITH com.vizipi.Procs.toDT(this, true) as starts RETURN toString(starts)")
+  endAt :   String @cypher(statement:"MATCH (this) WITH com.vizipi.Procs.toDT(this, false) as starts RETURN toString(starts)")
+  invitedCalendars :  [INVITED]
+  acceptedCalendars : [ACCEPTED]  
+  declinedCalendars : [DECLINED]
 }
 
 type BELONGS_TO @relation(name: "BELONGS_TO"){
@@ -94,8 +94,8 @@ type Mutation {
   **calendarId**
   The calendar this event belongs to.  if the calendar does not exist it will be created ( default timezone )
   """
-  createOrUpdateEvent(eventId:String="", calendarId:String!, startDate:String, endDate:String,title:String="",body:String=""): Event
-  @cypher(statement:"call com.vizipi.Procs.createOrUpdateEvent($cypherParams.ownerId, $calendarId, DateTime($startDate), DateTime($endDate), $title,$body,$eventId) yield node return node")
+  createOrUpdateEvent(eventId:String="", calendarId:String!, startAt:String!, endAt:String!,title:String="",body:String=""): Event
+  @cypher(statement:"call com.vizipi.Procs.createOrUpdateEvent($cypherParams.ownerId, $calendarId, DateTime($startAt), DateTime($endAt), $title,$body,$eventId) yield node return node")
 
 
   """
@@ -130,24 +130,24 @@ to   2020-01-01 11:45
   """
   invite one or more calendars to this event  ( any non existant calendar will be created and invited )
   """
-  inviteToEvent(eventID:String!, calendarIds:[String]): Event
-  @cypher(statement:"call com.vizipi.Procs.EventInvite($cypherParams.ownerId, $eventID, $calendarIds) yield node return node")
+  inviteToEvent(eventId:String!, calendarIds:[String]): Event
+  @cypher(statement:"call com.vizipi.Procs.EventInvite($cypherParams.ownerId, $eventId, $calendarIds) yield node return node")
 
-  acceptInvite(eventID:String!, calendarId:String!): Event
-  @cypher(statement:"call com.vizipi.Procs.AcceptInvite($cypherParams.ownerId, $eventID, $calendarId) yield node return node")  
+  acceptInvite(eventId:String!, calendarId:String!): Event
+  @cypher(statement:"call com.vizipi.Procs.AcceptInvite($cypherParams.ownerId, $eventId, $calendarId) yield node return node")  
 
-  declineInvite(eventID:String!, calendarId:String!): Event
-  @cypher(statement:"call com.vizipi.Procs.DeclineInvite($cypherParams.ownerId, $eventID, $calendarId) yield node return node")    
+  declineInvite(eventId:String!, calendarId:String!): Event
+  @cypher(statement:"call com.vizipi.Procs.DeclineInvite($cypherParams.ownerId, $eventId, $calendarId) yield node return node")    
 
-  unInvite(eventID:String!,  calendarIds:[String]): Event
-  @cypher(statement:"call com.vizipi.Procs.EventUnInvite($cypherParams.ownerId, $eventID, $calendarIds) yield node return node")      
+  unInvite(eventId:String!,  calendarIds:[String]): Event
+  @cypher(statement:"call com.vizipi.Procs.EventUnInvite($cypherParams.ownerId, $eventId, $calendarIds) yield node return node")      
 
 
 """
 Deletes the provided event  will return empty event or an error if you provided the wrong eventid
 """
-  deleteEvent(eventID:String!): Event
-  @cypher(statement:"call com.vizipi.Procs.DeleteEvent($cypherParams.ownerId, $eventID) yield node return node")      
+  deleteEvent(eventId:String!): Event
+  @cypher(statement:"call com.vizipi.Procs.DeleteEvent($cypherParams.ownerId, $eventId) yield node return node")      
 
 """
 Deletes the provided calendar and all the events associated with it.  Will return empty calendar or an error if you provided the wrong calendarId
