@@ -12,28 +12,51 @@
   type Calendar @deepAuth(path:"""{ owner:{Owner:{id:"$ownerId"}} }""", variables: ["$ownerId"]) {
     id:ID!
     timezone: String @cypher(statement:"match (this)-[:BELONGS_TO]-(tz:TZ) return tz.id limit 1")
+    """You the developer"""
     owner : OWNED
-    events: [BELONGS_TO]
+
+    """all events created or accepted by this calendar"""
+    events: [Event] @relation(name:"ATTENDING" direction:IN)
+    
+    """all events this calendar was invited to """
     invitedEvents : [INVITED] 
+    """all events accepted by this calendar """
     acceptedEvents : [ACCEPTED]
+
+    """all events this calendar declined to accept """
     declinedEvents : [DECLINED]
+    
+    """all events created by this calendar """
     createdEvents : [BELONGS_TO]
   }
 
-"Events in all calendars XX"
-type Event @deepAuth(path:"""{calendar:{Calendar:{owner:{Owner:{id:"$ownerId"}} }}}  """, variables: ["$ownerId"]) {
+
+type Event @deepAuth(path:"""{calendar:{owner:{Owner:{id:"$ownerId"}} }}  """, variables: ["$ownerId"]) {
   id:ID!
-  calendar:BELONGS_TO
+  calendar: Calendar @relation(name:"BELONGS_TO" direction:OUT)
   title:String
   body:String
-  startAt : String @cypher(statement:"MATCH (this) WITH com.vizipi.Procs.toDT(this, true) as starts RETURN toString(starts)")
-  endAt :   String @cypher(statement:"MATCH (this) WITH com.vizipi.Procs.toDT(this, false) as starts RETURN toString(starts)")
+  
+  startAt:String @cypher(statement:"MATCH (this) WITH com.vizipi.Procs.toDT(this, true) as starts RETURN toString(starts)")
+  endAt:String @cypher(statement:"MATCH (this) WITH com.vizipi.Procs.toDT(this, false) as starts RETURN toString(starts)")
+  createdAt:String @cypher(statement:"match (this)-[r:BELONGS_TO]-(:Calendar) return  toString(r.created_at)")
+
+  """all calendars invited to this event """
   invitedCalendars :  [INVITED]
+  
+  """all calendars accepted this event """
   acceptedCalendars : [ACCEPTED]  
+  
+  """all calendars declined this event """
   declinedCalendars : [DECLINED]
 }
 
-type BELONGS_TO @relation(name: "BELONGS_TO"){
+type EventState{
+  value:String
+  modifiedAt:String
+}
+
+type BELONGS_TO @relation(name:"BELONGS_TO"){
   from: Event
   to: Calendar
   created_at: DateTime
@@ -47,11 +70,6 @@ type ACCEPTED @relation(name:"ACCEPTED"){
 type DECLINED @relation(name:"DECLINED"){
   from: Calendar
   to: Event
-  created_at: DateTime
-}
-type CREATED @relation(name:"CREATED"){
-  from: Event
-  to: Calendar
   created_at: DateTime
 }
 type INVITED @relation(name:"INVITED"){
