@@ -19,15 +19,15 @@
     events: [Event] @relation(name:"ATTENDING" direction:IN)
     
     """all events this calendar was invited to """
-    invitedEvents : [INVITED] 
+    invitedEvents : [Event] @relation(name:"INVITED" direction:IN) 
     """all events accepted by this calendar """
-    acceptedEvents : [ACCEPTED]
+    acceptedEvents : [Event] @relation(name:"ACCEPTED" direction:OUT) 
 
     """all events this calendar declined to accept """
-    declinedEvents : [DECLINED]
+    declinedEvents : [Event] @relation(name:"DECLINED" direction:OUT) 
     
     """all events created by this calendar """
-    createdEvents : [BELONGS_TO]
+    createdEvents : [Event] @relation(name:"BELONGS_TO" direction:OUT) 
   }
 
 
@@ -42,13 +42,13 @@ type Event @deepAuth(path:"""{calendar:{owner:{Owner:{id:"$ownerId"}} }}  """, v
   createdAt:String @cypher(statement:"match (this)-[r:BELONGS_TO]-(:Calendar) return  toString(r.created_at)")
 
   """all calendars invited to this event """
-  invitedCalendars :  [INVITED]
+  invitedCalendars : [Calendar]  @relation(name:"INVITED" direction:OUT) 
   
   """all calendars accepted this event """
-  acceptedCalendars : [ACCEPTED]  
+  acceptedCalendars : [Calendar] @relation(name:"ACCEPTED" direction:IN) 
   
   """all calendars declined this event """
-  declinedCalendars : [DECLINED]
+  declinedCalendars : [Calendar] @relation(name:"DECLINED" direction:OUT) 
 }
 
 type EventState{
