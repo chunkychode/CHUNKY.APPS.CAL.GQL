@@ -37,6 +37,9 @@ type Event @deepAuth(path:"""{calendar:{owner:{Owner:{id:"$ownerId"}} }}  """, v
   title:String
   body:String
   
+  """returns Attending, Declined, Invited, Belongs_to depending on the  action taken by the calendarId specified """
+  state (calendarId:String!):String @cypher(statement:"MATCH (this)-[r]-(:Calendar{id:$calendarId}) WHERE not r:ATTENDING and NOT r:INTERACTED return type(r) limit 1")
+  
   startAt:String @cypher(statement:"MATCH (this) WITH com.vizipi.Procs.toDT(this, true) as starts RETURN toString(starts)")
   endAt:String @cypher(statement:"MATCH (this) WITH com.vizipi.Procs.toDT(this, false) as starts RETURN toString(starts)")
   createdAt:String @cypher(statement:"match (this)-[r:BELONGS_TO]-(:Calendar) return  toString(r.created_at)")
@@ -51,6 +54,7 @@ type Event @deepAuth(path:"""{calendar:{owner:{Owner:{id:"$ownerId"}} }}  """, v
   declinedCalendars : [Calendar] @relation(name:"DECLINED" direction:OUT) 
 
   attendeeHistory : [EVENT_INTERACTION] 
+
   }
 
 type EventState{
@@ -67,7 +71,7 @@ type EVENT_INTERACTION  @relation(name:"INTERACTED"){
   from: Event  @neo4j_ignore
   to: Calendar @neo4j_ignore
   action:String
-  at: String  @cypher(statement:"MATCH (this) return toString(this.modified_at)")
+  timeStamp: String  @cypher(statement:"MATCH (this) return toString(this.modified_at)")
   calendarId: String  @cypher(statement:"MATCH (c:Calendar)<-[this]-(:Event) return toString(c.id)")
 }
 
