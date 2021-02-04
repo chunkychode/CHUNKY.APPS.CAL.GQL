@@ -21,13 +21,13 @@
     """all events this calendar was invited to """
     invitedEvents : [Event] @relation(name:"INVITED" direction:IN) 
     """all events accepted by this calendar """
-    acceptedEvents : [Event] @relation(name:"ACCEPTED" direction:OUT) 
+    acceptedEvents : [Event] @relation(name:"ACCEPTED" direction:IN) 
 
     """all events this calendar declined to accept """
-    declinedEvents : [Event] @relation(name:"DECLINED" direction:OUT) 
+    declinedEvents : [Event] @relation(name:"DECLINED" direction:IN) 
     
     """all events created by this calendar """
-    createdEvents : [Event] @relation(name:"BELONGS_TO" direction:OUT) 
+    createdEvents : [Event] @relation(name:"BELONGS_TO" direction:IN) 
   }
 
 
@@ -45,41 +45,30 @@ type Event @deepAuth(path:"""{calendar:{owner:{Owner:{id:"$ownerId"}} }}  """, v
   invitedCalendars : [Calendar]  @relation(name:"INVITED" direction:OUT) 
   
   """all calendars accepted this event """
-  acceptedCalendars : [Calendar] @relation(name:"ACCEPTED" direction:IN) 
+  acceptedCalendars : [Calendar] @relation(name:"ACCEPTED" direction:OUT) 
   
   """all calendars declined this event """
   declinedCalendars : [Calendar] @relation(name:"DECLINED" direction:OUT) 
-}
+
+  attendeeHistory : [EVENT_INTERACTION] 
+  }
 
 type EventState{
   value:String
   modifiedAt:String
 }
 
-type BELONGS_TO @relation(name:"BELONGS_TO"){
-  from: Event
-  to: Calendar
-  created_at: DateTime
-}
-
-type ACCEPTED @relation(name:"ACCEPTED"){
-  from: Calendar
-  to: Event
-  created_at: DateTime
-}
-type DECLINED @relation(name:"DECLINED"){
-  from: Calendar
-  to: Event
-  created_at: DateTime
-}
-type INVITED @relation(name:"INVITED"){
-  from: Event
-  to: Calendar
-  created_at: DateTime
-}
 type OWNED @relation(name:"OWNED"){
   from: Calendar
   to: Owner
+}
+
+type EVENT_INTERACTION  @relation(name:"INTERACTED"){
+  from: Event  @neo4j_ignore
+  to: Calendar @neo4j_ignore
+  action:String
+  at: String  @cypher(statement:"MATCH (this) return toString(this.modified_at)")
+  calendarId: String  @cypher(statement:"MATCH (c:Calendar)<-[this]-(:Event) return toString(c.id)")
 }
 
 type TimeSlot{
