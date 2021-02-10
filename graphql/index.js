@@ -25,15 +25,15 @@ const resolvers = {
   Query: {
     Owner(object, params, ctx, resolveInfo) {
       const { authParams, authResolveInfo } = applyDeepAuth(params, ctx, resolveInfo);
-      return neo4jgraphql(object, authParams, ctx, resolveInfo);
+      return neo4jgraphql(object, authParams, ctx, authResolveInfo);
     },
     Calendar(object, params, ctx, resolveInfo) {
       const { authParams, authResolveInfo } = applyDeepAuth(params, ctx, resolveInfo);
-      return neo4jgraphql(object, authParams, ctx, resolveInfo);
+      return neo4jgraphql(object, authParams, ctx, authResolveInfo);
     },
     Event(object, params, ctx, resolveInfo) {
       const { authParams, authResolveInfo } = applyDeepAuth(params, ctx, resolveInfo);
-      return neo4jgraphql(object, authParams, ctx, resolveInfo);
+      return neo4jgraphql(object, authParams, ctx, authResolveInfo);
     }
   },
 };
