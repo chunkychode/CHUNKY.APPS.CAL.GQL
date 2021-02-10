@@ -20,7 +20,7 @@
 
     """all events created or accepted by this calendar"""
     events: [Event] @relation(name:"ATTENDING" direction:IN)
-    events_between(startAt:String, endAt:String): [Event] @cypher(statement:"MATCH (this)-[:BELONGS_TO]-(e:Event) WITH e, DateTime($startAt) as rStart, DateTime($endAt) as rEnds , com.vizipi.Procs.toDT(e, true) as starts WHERE starts>=rStart and rEnds>=starts return distinct e")
+    events_between(startAt:String, endAt:String): [Event] @cypher(statement:"MATCH (this)-[]-(e:Event) WITH e, DateTime($startAt) as rStart, DateTime($endAt) as rEnds , com.vizipi.Procs.toDT(e, true) as starts WHERE starts>=rStart and rEnds>=starts return distinct e")
 
     """all events this calendar was invited to """
     invitedEvents : [Event] @relation(name:"INVITED" direction:IN) 
@@ -93,6 +93,9 @@ type Day{
   id: String
 }
 
+type Query{
+  events_between(startAt:String, endAt:String): [Event] @cypher(statement:"MATCH (:Owner{id:$cypherParams.ownerId})<-[:OWNED]-(:Calendar)-[]-(e:Event) WITH e, DateTime($startAt) as rStart, DateTime($endAt) as rEnds , com.vizipi.Procs.toDT(e, true) as starts WHERE starts>=rStart and rEnds>=starts return distinct e")  
+}
 type Mutation {
 
   """
