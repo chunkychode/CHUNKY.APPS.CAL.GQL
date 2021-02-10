@@ -3,6 +3,9 @@
     variables: [String]
   ) on OBJECT
   
+  type Version{
+    current:String
+  }
   "You are the owner or all calendars"
   type Owner @deepAuth(path:"""{ id:"$ownerId" }""", variables: ["$ownerId"]) {
     id:ID!

@@ -21,8 +21,11 @@ const isBodySchemaRequest = function (body) {
   return body.operationName == "IntrospectionQuery";
 };
 
-const resolvers = {
+const resolvers = {  
   Query: {
+    Version(object, params, ctx, resolveInfo){
+      return [{current:_Version}];
+    },
     Owner(object, params, ctx, resolveInfo) {
       const { authParams, authResolveInfo } = applyDeepAuth(params, ctx, resolveInfo);
       return neo4jgraphql(object, authParams, ctx, authResolveInfo);
@@ -38,6 +41,7 @@ const resolvers = {
   },
 };
 
+const _Version = "0.1 20210210";
 const schema = makeAugmentedSchema({ 
   typeDefs,
   resolvers,
@@ -57,6 +61,13 @@ const server = new ApolloServer(
       err.message = err.message.replace("Failed to invoke procedure `apoc.cypher.doIt`: Caused by: org.neo4j.exceptions.TemporalParseException: ","");
       err.message = err.message.replace("Context creation failed: ","");
       return new ApolloError(err.message, err.extensions.code);
+    },
+    formatResponse:(res, context) => {
+      if(context.request.operationName != "IntrospectionQuery"){
+        context.response.http.headers.set('x-version',_Version);
+      }
+      
+      return res;
     },
     playground:{
       settings:{
