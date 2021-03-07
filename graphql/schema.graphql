@@ -95,6 +95,7 @@ type Day{
 
 type Query{
   events_between(startAt:String, endAt:String): [Event] @cypher(statement:"MATCH (:Owner{id:$cypherParams.ownerId})<-[:OWNED]-(:Calendar)-[]-(e:Event) WITH e, DateTime($startAt) as rStart, DateTime($endAt) as rEnds , com.vizipi.Procs.toDT(e, true) as starts WHERE starts>=rStart and rEnds>=starts return distinct e")  
+  events_between_for_calendar(startAt:String, endAt:String, calendarId:String): [Event] @cypher(statement:"MATCH (:Owner{id:$cypherParams.ownerId})<-[:OWNED]-(:Calendar{id:$calendarId})-[]-(e:Event) WITH e, DateTime($startAt) as rStart, DateTime($endAt) as rEnds , com.vizipi.Procs.toDT(e, true) as starts WHERE starts>=rStart and rEnds>=starts return distinct e")  
 }
 type Mutation {
 
