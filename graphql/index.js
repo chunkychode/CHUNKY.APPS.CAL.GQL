@@ -41,7 +41,7 @@ const resolvers = {
   },
 };
 
-const _Version = "0.3 20210213";
+const _Version = "0.4 20210307";
 const schema = makeAugmentedSchema({ 
   typeDefs,
   resolvers,
