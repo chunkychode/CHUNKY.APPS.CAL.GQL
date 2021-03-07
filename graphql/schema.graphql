@@ -20,6 +20,9 @@
 
     """all events created or accepted by this calendar"""
     events: [Event] @relation(name:"ATTENDING" direction:IN)
+    
+    """ events within X days from now. default is 7 days"""
+    events_withinDays(dayCount:Int=7): [Event] @cypher(statement:"WITH dateTime() AS date1 with date1, date1 + duration({days:$dayCount}) as date2  MATCH (this)-[]-(e:Event)  WITH e, date1, date2, com.vizipi.Procs.toDT(e, true) as starts WHERE starts>=date1 and date2>=starts return distinct e")
     events_between(startAt:String, endAt:String): [Event] @cypher(statement:"MATCH (this)-[]-(e:Event) WITH e, DateTime($startAt) as rStart, DateTime($endAt) as rEnds , com.vizipi.Procs.toDT(e, true) as starts WHERE starts>=rStart and rEnds>=starts return distinct e")
 
     """all events this calendar was invited to """
@@ -44,14 +47,9 @@ type Event @deepAuth(path:"""{calendar:{owner:{id:"$ownerId"} }}  """, variables
   """returns Attending, Declined, Invited, Belongs_to depending on the  action taken by the calendarId specified """
   state (calendarId:String!):String @cypher(statement:"MATCH (this)-[r]-(:Calendar{id:$calendarId}) WHERE not r:ATTENDING and NOT r:INTERACTED and NOT r:NEXTEVENT return type(r) limit 1")
   
-  # startAt:String @cypher(statement:"MATCH (this) WITH com.vizipi.Procs.toDT(this, true) as starts RETURN toString(starts)")
-  # endAt:String @cypher(statement:"MATCH (this) WITH com.vizipi.Procs.toDT(this, false) as starts RETURN toString(starts)")
-
-  createdAt:String @cypher(statement:"match (this)-[r:BELONGS_TO]-(:Calendar) return  toString(r.created_at)")
+    createdAt:String @cypher(statement:"match (this)-[r:BELONGS_TO]-(:Calendar) return  toString(r.created_at)")
   endAt:DateTime
   startAt:DateTime
-  endAt_str:String
-  startAt_str:String
 
   """all calendars invited to this event """
   invitedCalendars : [Calendar]  @relation(name:"INVITED" direction:OUT) 
