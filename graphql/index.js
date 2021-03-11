@@ -18,7 +18,11 @@ const driver = neo4j.driver(
 
 
 const isBodySchemaRequest = function (body) {
-  return body.operationName == "IntrospectionQuery";
+  try{
+    return body.operationName == "IntrospectionQuery";
+  }catch(err){
+    return false;
+  }
 };
 
 const resolvers = {  
@@ -66,10 +70,11 @@ const server = new ApolloServer(
       return new ApolloError(err.message.trim(), err.extensions.code);
     },
     formatResponse:(res, context) => {
-      if(context.request.operationName != "IntrospectionQuery"){
-        context.response.http.headers.set('x-version',_Version);
-      }
-      
+      try{
+        if(context.request.operationName != "IntrospectionQuery"){
+          context.response.http.headers.set('x-version',_Version);
+        }
+      }catch(err){}
       return res;
     },
     context: async (req)  => {
