@@ -41,7 +41,7 @@ const resolvers = {
   },
 };
 
-const _Version = "1.0 2021";
+const _Version = "1.0 2021.2";
 const schema = makeAugmentedSchema({ 
   typeDefs,
   resolvers,
@@ -94,7 +94,7 @@ const server = new ApolloServer(
           }
         }
       
-      return {driver,neo4jDatabase:"cal", deepAuthParams:{$ownerId:cparams.ownerId}, cypherParams:{ownerId:cparams.ownerId}};
+      return {driver,neo4jDatabase:process.env.NEO_DB, deepAuthParams:{$ownerId:cparams.ownerId}, cypherParams:{ownerId:cparams.ownerId}};
     }
     
   });
