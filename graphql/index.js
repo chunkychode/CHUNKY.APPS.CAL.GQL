@@ -72,11 +72,6 @@ const server = new ApolloServer(
       
       return res;
     },
-    playground:{
-      settings:{
-        'schema.polling.interval': 90000,
-      },
-    },
     context: async (req)  => {
       
       const cparams = {ownerId:""};
