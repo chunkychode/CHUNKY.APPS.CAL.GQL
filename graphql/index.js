@@ -7,7 +7,7 @@ const { Kind } = require('graphql');
 const verifyToken = require('./verifyToken');
 const dotenv = require('dotenv');
 const { applyDeepAuth, applyDeepAuthToParams } = require('neo4j-deepauth');
-const complexity = require("./complexity.js");
+const depthLimit = require("graphql-depth-limit");
 
 dotenv.config();
 
@@ -61,7 +61,7 @@ const schema = makeAugmentedSchema({
 const server = new ApolloServer(
   { 
     schema, 
-    plugins: [complexity(schema)],
+    validationRules: [depthLimit(4)],
     formatError: (err) => {
       err.message = err.message.replace("Failed to invoke procedure `apoc.cypher.doIt`: Caused by: java.lang.","");
       err.message = err.message.replace("Failed to invoke procedure `apoc.cypher.doIt`: Caused by: org.neo4j.exceptions.TemporalParseException: ","");
