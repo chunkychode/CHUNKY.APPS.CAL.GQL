@@ -69,6 +69,10 @@ const server = new ApolloServer(
       err.message = err.message.replace("`apoc.cypher.runFirstColumn`:","");
       err.message = err.message.replace("Caused by: org.neo4j.exceptions.ParameterNotFoundException:","");
       err.message = err.message.replace("Context creation failed: ","");
+      if(err.message.indexOf("Field") > -1 && err.message.indexOf("state") > 0 && err.message.indexOf("is required, but it was not provided") > 0 ){
+        err.message = `Event state requires a calendarId to show states for that event as related to a specific calendar, e.g. accepted 
+        see:https://www.ezcaldev.com/docs/objects/event`
+      }
       return new ApolloError(err.message.trim(), err.extensions.code);
     },
     formatResponse:(res, context) => {
