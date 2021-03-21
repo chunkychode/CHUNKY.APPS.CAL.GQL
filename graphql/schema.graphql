@@ -62,6 +62,8 @@ type Event @deepAuth(path:"""{calendar:{owner:{id:"$ownerId"} }}  """, variables
 
   attendeeHistory : [EVENT_INTERACTION] 
 
+  linkedCalendars : [EVENT_LINKS]
+
   }
 
 type EventState{
@@ -73,7 +75,13 @@ type OWNED @relation(name:"OWNED"){
   from: Calendar
   to: Owner
 }
-
+type EVENT_LINKS  @relation(name:"LINKED"){
+  from: Event  @neo4j_ignore
+  to: Calendar @neo4j_ignore
+  action:String
+  timeStamp: String  @cypher(statement:"MATCH (this) return toString(this.modified_at)")
+  calendarId: String  @cypher(statement:"MATCH (c:Calendar)<-[this]-(:Event) return toString(c.id)")
+}
 type EVENT_INTERACTION  @relation(name:"INTERACTED"){
   from: Event  @neo4j_ignore
   to: Calendar @neo4j_ignore
