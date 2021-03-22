@@ -128,8 +128,8 @@ to   2020-01-01 11:45
 
   *Note* the time zone is not yes translated :/ and need to add how large of a window is needed
   """
-  checkAvailability(calendarIds:[String], fromDate:String!,toDate:String!  ): [TimeSlot]
-  @cypher(statement:"call com.vizipi.Procs.checkAvailability($cypherParams.ownerId, $calendarIds, DateTime($fromDate), DateTime($toDate)) yield from, to return {from:from,to:to} as node")        
+  checkAvailability(calendarIds:[String], fromDate:String!,toDate:String!, durationMinutes: Int  ): [TimeSlot]
+  @cypher(statement:"call com.vizipi.Procs.checkAvailability($cypherParams.ownerId, $calendarIds, DateTime($fromDate), DateTime($toDate), $durationMinutes) yield from, to return {from:from,to:to} as node")        
   
 }
 type Mutation {
